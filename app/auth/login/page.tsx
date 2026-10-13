@@ -36,9 +36,19 @@ export default function LoginPage() {
             if (!res.ok) {
                 throw new Error(data.message || "Login failed");
             }
-            Cookies.set("token", data.data.accessToken, { expires: 1 });
+            Cookies.set("token", data.data.token, { expires: 1 });
+            Cookies.set("role", data.data.user.role, { expires: 1 });
+            Cookies.set("user", JSON.stringify(data.data.user), { expires: 1 });
             toast.success("Login successful");
-            router.push("/dashboard/tenant");
+            const userRole = data.data.user.role;
+            if (userRole === "ADMIN") {
+                router.push("/dashboard/admin");
+            } else if (userRole === "LANDLORD") {
+                router.push("/dashboard/landlord");
+            } else {
+                router.push("/dashboard/tenant");
+            }
+
 
         } catch (error: any) {
             toast.error(error.message);
