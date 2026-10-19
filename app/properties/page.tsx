@@ -89,7 +89,7 @@ export default function PropertiesPage() {
 
     return (
         <div className="container mx-auto px-4 py-10 max-w-7xl">
-            {/* ===================== PAGE HEADER ===================== */}
+            {/*  PAGE HEADER  */}
             <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
                     Explore Rental Properties
@@ -99,7 +99,7 @@ export default function PropertiesPage() {
                 </p>
             </div>
 
-            {/* ===================== SEARCH & FILTER BAR ===================== */}
+            {/*  SEARCH & FILTER BAR  */}
             <div className="bg-card border rounded-xl p-4 md:p-6 mb-10 shadow-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-center">
                     {/* Search Input */}
@@ -191,7 +191,7 @@ export default function PropertiesPage() {
                 </div>
             </div>
 
-            {/* ===================== PROPERTIES GRID ===================== */}
+            {/* PROPERTIES GRID  */}
             {isLoading ? (
                 // Loading Skeleton
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

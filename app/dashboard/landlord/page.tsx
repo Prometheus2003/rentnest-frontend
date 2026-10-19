@@ -509,7 +509,7 @@ export default function LandlordDashboard() {
                 </div>
             )}
 
-            {/* ===================== TAB 2: MY LISTINGS ===================== */}
+            {/*  TAB 2: MY LISTINGS  */}
             {activeTab === "LISTINGS" && (
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
@@ -597,7 +597,7 @@ export default function LandlordDashboard() {
                 </div>
             )}
 
-            {/* ===================== TAB 3: ADD NEW LISTING ===================== */}
+            {/*  TAB 3: ADD NEW LISTING  */}
             {activeTab === "ADD_NEW" && (
                 <Card className="max-w-2xl mx-auto shadow-sm">
                     <CardHeader>
@@ -733,7 +733,7 @@ export default function LandlordDashboard() {
                 </Card>
             )}
 
-            {/* ===================== EDIT PROPERTY MODAL ===================== */}
+            {/* EDIT PROPERTY MODAL  */}
             {editingProperty && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
                     <Card className="w-full max-w-lg shadow-2xl animate-in fade-in-50 zoom-in-95">

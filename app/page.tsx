@@ -144,7 +144,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* ===================== HERO SECTION ===================== */}
+      {/*  HERO SECTION */}
       <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background py-20 md:py-28">
         <div className="container mx-auto px-4 text-center max-w-4xl">
           <Badge variant="secondary" className="mb-4 px-3 py-1 text-sm font-medium">
@@ -175,7 +175,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* ===================== FEATURED PROPERTIES SECTION ===================== */}
+      {/* FEATURED PROPERTIES SECTION  */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
@@ -195,7 +195,7 @@ export default function Home() {
           </Suspense>
         </div>
       </section>
-      {/* ===================== WHY CHOOSE US SECTION ===================== */}
+      {/*  WHY CHOOSE US SECTION */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="text-center mb-16">
@@ -235,7 +235,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* ===================== FOOTER ===================== */}
+      {/*  FOOTER */}
       <footer className="mt-auto border-t bg-muted/40 py-8">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">

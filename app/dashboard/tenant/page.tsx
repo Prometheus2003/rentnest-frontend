@@ -301,7 +301,7 @@ export default function TenantDashboard() {
                 )}
             </div>
 
-            {/* ===================== PAYMENT RECEIPT MODAL ===================== */}
+            {/*  PAYMENT RECEIPT MODAL  */}
             {selectedReceipt && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
                     <Card className="w-full max-w-md shadow-2xl border-emerald-500/20 animate-in fade-in-50 zoom-in-95">
