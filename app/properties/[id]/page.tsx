@@ -17,7 +17,8 @@ import {
     Mail,
     Phone,
     CheckCircle2,
-    Send
+    Send,
+    Star
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,15 @@ interface PropertyDetails {
         email: string;
         contactNumber?: string | null;
     };
+    reviews?: {
+        id: string;
+        rating: number;
+        comment: string;
+        createdAt: string;
+        tenant?: {
+            name: string;
+        };
+    }[];
 }
 
 export default function PropertyDetailsPage() {
@@ -127,12 +137,66 @@ export default function PropertyDetailsPage() {
 
             toast.success("Rental request submitted successfully!");
             setMessage("");
-            // Redirect tenant to their requests dashboard
+            
             router.push("/dashboard/tenant");
         } catch (error: any) {
             toast.error(error.message || "Something went wrong");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    
+    const [rating, setRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+    const handleReviewSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!token || role !== "TENANT") {
+            toast.error("Only signed-in Tenants can submit reviews");
+            return;
+        }
+
+        if (!reviewComment.trim()) {
+            toast.error("Please enter your review comment");
+            return;
+        }
+
+        setIsSubmittingReview(true);
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+            const res = await fetch(`${apiUrl}/reviews`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: token,
+                },
+                body: JSON.stringify({
+                    propertyId: id,
+                    rating,
+                    comment: reviewComment,
+                }),
+            });
+
+            const json = await res.json();
+            if (!res.ok) {
+                throw new Error(json.message || "Failed to submit review");
+            }
+
+            toast.success("Review submitted successfully!");
+            setReviewComment("");
+
+            
+            const refreshRes = await fetch(`${apiUrl}/properties/${id}`);
+            const refreshJson = await refreshRes.json();
+            if (refreshJson.data) {
+                setProperty(refreshJson.data);
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Review failed");
+        } finally {
+            setIsSubmittingReview(false);
         }
     };
 
@@ -180,7 +244,7 @@ export default function PropertyDetailsPage() {
             {/* Main Grid: Left side Details, Right side Booking Card */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                {/* ===================== LEFT COLUMN (DETAILS) ===================== */}
+                {/*  LEFT COLUMN (DETAILS)  */}
                 <div className="lg:col-span-8 space-y-8">
 
                     {/* Main Photo Banner */}
@@ -309,9 +373,122 @@ export default function PropertyDetailsPage() {
                         </div>
                     )}
 
+                    {/*  REVIEWS & RATINGS SECTION  */}
+                    <div className="pt-6 border-t space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-xl font-bold flex items-center gap-2">
+                                    Tenant Reviews & Ratings
+                                    {property.reviews && property.reviews.length > 0 && (
+                                        <Badge variant="secondary" className="text-xs">
+                                            {property.reviews.length} {property.reviews.length === 1 ? "Review" : "Reviews"}
+                                        </Badge>
+                                    )}
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Verified experiences from tenants who have stayed here.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Leave a Review Form (For logged in tenants) */}
+                        {role === "TENANT" && (
+                            <Card className="bg-muted/30 border-dashed">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-sm font-semibold">Write a Review</CardTitle>
+                                </CardHeader>
+                                <form onSubmit={handleReviewSubmit}>
+                                    <CardContent className="space-y-3">
+                                        {/* Interactive Star Picker */}
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-xs text-muted-foreground mr-2">Your Rating:</span>
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setRating(star)}
+                                                    className="focus:outline-hidden transition transform hover:scale-110"
+                                                >
+                                                    <Star
+                                                        className={`h-5 w-5 ${
+                                                            star <= rating
+                                                                ? "fill-amber-400 text-amber-400"
+                                                                : "text-muted-foreground/30"
+                                                        }`}
+                                                    />
+                                                </button>
+                                            ))}
+                                            <span className="text-xs font-semibold ml-2 text-foreground">
+                                                {rating} / 5
+                                            </span>
+                                        </div>
+
+                                        <Input
+                                            placeholder="Share your experience (amenities, cleanliness, neighborhood)..."
+                                            value={reviewComment}
+                                            onChange={(e) => setReviewComment(e.target.value)}
+                                            required
+                                        />
+                                    </CardContent>
+                                    <CardFooter className="pt-0 flex justify-end">
+                                        <Button size="sm" type="submit" disabled={isSubmittingReview} className="gap-1.5 text-xs">
+                                            <Send className="h-3.5 w-3.5" />
+                                            {isSubmittingReview ? "Posting..." : "Submit Review"}
+                                        </Button>
+                                    </CardFooter>
+                                </form>
+                            </Card>
+                        )}
+
+                        {/* Existing Reviews List */}
+                        {property.reviews && property.reviews.length > 0 ? (
+                            <div className="space-y-3">
+                                {property.reviews.map((rev) => (
+                                    <div key={rev.id} className="p-4 rounded-xl border bg-card space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                                                    {rev.tenant?.name ? rev.tenant.name.charAt(0) : "T"}
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-semibold">{rev.tenant?.name || "Verified Tenant"}</p>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        {new Date(rev.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Display Stars */}
+                                            <div className="flex items-center gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                    <Star
+                                                        key={s}
+                                                        className={`h-3.5 w-3.5 ${
+                                                            s <= rev.rating
+                                                                ? "fill-amber-400 text-amber-400"
+                                                                : "text-muted-foreground/30"
+                                                        }`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <p className="text-xs text-muted-foreground leading-relaxed pl-10">
+                                            "{rev.comment}"
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-muted-foreground py-4 italic">
+                                No reviews yet. Be the first tenant to leave a rating!
+                            </p>
+                        )}
+                    </div>
+
                 </div>
 
-                {/* ===================== RIGHT COLUMN (BOOKING WIDGET) ===================== */}
+                {/*  RIGHT COLUMN (BOOKING WIDGET)*/}
                 <div className="lg:col-span-4">
                     <div className="sticky top-24">
                         <Card className="shadow-md border-primary/20">
@@ -340,7 +517,6 @@ export default function PropertyDetailsPage() {
                                         </Link>
                                     </div>
                                 ) : (
-                                    // Tenant Booking Form
                                     <form onSubmit={handleBookingSubmit} className="space-y-4">
 
                                         {/* Move-in Date */}

@@ -71,11 +71,16 @@ export default function Navbar() {
                         // --- Logged In State ---
                         <>
                             {userName && (
-                                <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-                                    <User className="h-4 w-4" />
-                                    <span>{userName}</span>
-                                </div>
+                                <Link
+                                    href="/dashboard/profile"
+                                    className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
+                                    title="Edit Profile"
+                                >
+                                    <User className="h-4 w-4 text-primary" />
+                                    <span className="font-medium">{userName}</span>
+                                </Link>
                             )}
+
                             {role && (
                                 <Badge variant="outline" className="hidden sm:inline-flex">
                                     {role}
