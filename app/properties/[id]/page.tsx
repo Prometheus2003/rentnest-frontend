@@ -249,18 +249,15 @@ export default function PropertyDetailsPage() {
 
                     {/* Main Photo Banner */}
                     <div className="relative h-72 sm:h-96 w-full rounded-2xl overflow-hidden bg-muted border">
-                        {property.images?.[0] && !property.images[0].includes("example.com") ? (
-                            <img
-                                src={property.images[0]}
-                                alt={property.title}
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                                <Building2 className="h-20 w-20 stroke-[1.2]" />
-                                <span className="text-sm mt-2">Verified RentNest Listing</span>
-                            </div>
-                        )}
+                        <img
+                            src={
+                                property.images?.[0] && !property.images[0].includes("example.com")
+                                    ? property.images[0]
+                                    : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80"
+                            }
+                            alt={property.title}
+                            className="h-full w-full object-cover"
+                        />
 
                         <div className="absolute top-4 left-4 flex gap-2">
                             <Badge className="bg-primary text-primary-foreground font-semibold px-3 py-1 text-sm shadow">

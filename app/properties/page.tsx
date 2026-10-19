@@ -205,18 +205,15 @@ export default function PropertiesPage() {
                         <Card key={property.id} className="overflow-hidden flex flex-col hover:shadow-lg transition duration-200">
                             {/* Image Banner */}
                             <div className="relative h-48 w-full bg-muted flex items-center justify-center overflow-hidden">
-                                {property.images?.[0] && !property.images[0].includes("example.com") ? (
-                                    <img
-                                        src={property.images[0]}
-                                        alt={property.title}
-                                        className="h-full w-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                        <Building2 className="h-12 w-12 stroke-[1.5]" />
-                                        <span className="text-xs mt-1">RentNest Verified</span>
-                                    </div>
-                                )}
+                                <img
+                                    src={
+                                        property.images?.[0] && !property.images[0].includes("example.com")
+                                            ? property.images[0]
+                                            : "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80"
+                                    }
+                                    alt={property.title}
+                                    className="h-full w-full object-cover transition duration-300 hover:scale-105"
+                                />
 
                                 {/* Price Badge */}
                                 <span className="absolute top-3 right-3 bg-primary text-primary-foreground font-bold px-3 py-1 rounded-full text-sm shadow">
