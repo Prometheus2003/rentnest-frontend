@@ -33,6 +33,8 @@ export default function PropertiesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("ALL");
     const [sortBy, setSortBy] = useState("DEFAULT");
+    const [maxPrice, setMaxPrice] = useState("");
+    const [bedroomsFilter, setBedroomsFilter] = useState("ALL");
 
     useEffect(() => {
         async function fetchProperties() {
@@ -66,7 +68,10 @@ export default function PropertiesPage() {
             const matchesCategory =
                 selectedCategory.toUpperCase() === "ALL" ||
                 property.category?.name.toLowerCase() === selectedCategory.toLowerCase();
-            return matchesSearch && matchesCategory;
+            const matchesMaxPrice = !maxPrice || property.price <= Number(maxPrice);
+            const matchesBedrooms =
+                bedroomsFilter === "ALL" || property.bedrooms >= Number(bedroomsFilter);
+            return matchesSearch && matchesCategory && matchesMaxPrice && matchesBedrooms;
         })
         .sort((a, b) => {
             if (sortBy === "PRICE_LOW_TO_HIGH") return a.price - b.price;
@@ -78,6 +83,8 @@ export default function PropertiesPage() {
         setSearchQuery("");
         setSelectedCategory("ALL");
         setSortBy("DEFAULT");
+        setMaxPrice("");
+        setBedroomsFilter("ALL");
     };
 
     return (
@@ -94,9 +101,9 @@ export default function PropertiesPage() {
 
             {/* ===================== SEARCH & FILTER BAR ===================== */}
             <div className="bg-card border rounded-xl p-4 md:p-6 mb-10 shadow-xs">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 items-center">
                     {/* Search Input */}
-                    <div className="relative md:col-span-5">
+                    <div className="relative md:col-span-4">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search by city, area, or property title..."
@@ -107,7 +114,7 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Category Dropdown */}
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-2">
                         <Select value={selectedCategory} onValueChange={(val) => { if (val) setSelectedCategory(val); }}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="All Categories" />
@@ -123,8 +130,35 @@ export default function PropertiesPage() {
                         </Select>
                     </div>
 
+                    {/* Bedrooms Dropdown */}
+                    <div className="md:col-span-2">
+                        <Select value={bedroomsFilter} onValueChange={(val) => { if (val) setBedroomsFilter(val); }}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Bedrooms" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">All Bedrooms</SelectItem>
+                                <SelectItem value="1">1+ Bed</SelectItem>
+                                <SelectItem value="2">2+ Beds</SelectItem>
+                                <SelectItem value="3">3+ Beds</SelectItem>
+                                <SelectItem value="4">4+ Beds</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Max Price Input */}
+                    <div className="md:col-span-2">
+                        <Input
+                            type="number"
+                            placeholder="Max Price ($)"
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(e.target.value)}
+                            min={0}
+                        />
+                    </div>
+
                     {/* Sort Dropdown */}
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-2">
                         <Select value={sortBy} onValueChange={(val) => { if (val) setSortBy(val); }}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Sort By" />
@@ -136,19 +170,6 @@ export default function PropertiesPage() {
                             </SelectContent>
                         </Select>
                     </div>
-
-                    {/* Reset Button */}
-                    <div className="md:col-span-1 flex justify-end">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            title="Reset Filters"
-                            onClick={handleResetFilters}
-                            className="w-full md:w-auto"
-                        >
-                            <RotateCcw className="h-4 w-4" />
-                        </Button>
-                    </div>
                 </div>
 
                 {/* Result Counter & Active Filter Pills */}
@@ -156,13 +177,16 @@ export default function PropertiesPage() {
                     <span>
                         Showing <strong className="text-foreground">{filteredProperties.length}</strong> of {properties.length} properties
                     </span>
-                    {(searchQuery || selectedCategory !== "ALL" || sortBy !== "DEFAULT") && (
-                        <button
+                    {(searchQuery || selectedCategory !== "ALL" || sortBy !== "DEFAULT" || maxPrice || bedroomsFilter !== "ALL") && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={handleResetFilters}
-                            className="text-xs text-primary hover:underline font-medium"
+                            className="text-xs text-primary hover:text-primary gap-1 h-8"
                         >
-                            Clear all filters
-                        </button>
+                            <RotateCcw className="h-3.5 w-3.5" />
+                            Reset filters
+                        </Button>
                     )}
                 </div>
             </div>
