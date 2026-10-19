@@ -22,7 +22,8 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`,
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+            const res = await fetch(`${apiUrl}/login`,
                 {
                     method: "POST",
                     headers: {
@@ -62,6 +63,47 @@ export default function LoginPage() {
                 <CardHeader>
                     <CardTitle className="text-2xl">Login to RentNest</CardTitle>
                     <CardDescription>Enter your email below to login to your account.</CardDescription>
+                    
+                    {/* Quick-Fill Demo Buttons */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2">
+                        <span className="text-[11px] text-muted-foreground mr-1">Quick Fill:</span>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="text-xs h-7 px-2 cursor-pointer"
+                            onClick={() => {
+                                setEmail("tenant@rentnest.com");
+                                setPassword("tenant123");
+                            }}
+                        >
+                            👤 Tenant
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="text-xs h-7 px-2 cursor-pointer"
+                            onClick={() => {
+                                setEmail("landlord@rentnest.com");
+                                setPassword("landlord123");
+                            }}
+                        >
+                            🏠 Landlord
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="text-xs h-7 px-2 cursor-pointer"
+                            onClick={() => {
+                                setEmail("admin@rentnest.com");
+                                setPassword("admin123");
+                            }}
+                        >
+                            🛡️ Admin
+                        </Button>
+                    </div>
                 </CardHeader>
                 <form onSubmit={handleLogin}>
                     <CardContent className="grid gap-4">
