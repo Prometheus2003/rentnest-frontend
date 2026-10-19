@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   Building2, MapPin, Bed, Bath, ShieldCheck, CreditCard, Clock, ArrowRight, Search
@@ -38,9 +39,111 @@ async function getFeaturedProperties(): Promise<Property[]> {
   }
 }
 
-export default async function Home() {
+function FeaturedPropertiesSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3].map((n) => (
+        <Card key={n} className="overflow-hidden animate-pulse">
+          <div className="h-48 w-full bg-muted" />
+          <CardHeader className="pb-2">
+            <div className="h-4 w-20 bg-muted rounded mb-2" />
+            <div className="h-6 w-3/4 bg-muted rounded mb-2" />
+            <div className="h-4 w-1/2 bg-muted rounded" />
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="h-4 w-full bg-muted rounded mb-2" />
+            <div className="h-4 w-2/3 bg-muted rounded" />
+          </CardContent>
+          <CardFooter className="pt-0">
+            <div className="h-10 w-full bg-muted rounded" />
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+async function FeaturedPropertiesList() {
   const properties = await getFeaturedProperties();
   const featured = properties.slice(0, 3);
+
+  if (featured.length === 0) {
+    return (
+      <div className="text-center py-12 bg-background border rounded-lg">
+        <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+        <p className="text-muted-foreground">No properties available yet. Be the first to list one!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {featured.map((property) => (
+        <Card key={property.id} className="overflow-hidden flex flex-col hover:shadow-lg transition duration-200">
+          {/* Property Image Preview */}
+          <div className="relative h-48 w-full bg-muted flex items-center justify-center overflow-hidden">
+            {property.images?.[0] && !property.images[0].includes("example.com") ? (
+              <img
+                src={property.images[0]}
+                alt={property.title}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-muted-foreground">
+                <Building2 className="h-12 w-12 stroke-[1.5]" />
+                <span className="text-xs mt-1">RentNest Listing</span>
+              </div>
+            )}
+            <span className="absolute top-3 right-3 bg-primary text-primary-foreground font-bold px-3 py-1 rounded-full text-sm shadow">
+              ${property.price} / mo
+            </span>
+          </div>
+
+          {/* Card Content */}
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+              <span className="font-semibold text-primary uppercase tracking-wider">
+                {property.category?.name || "Apartment"}
+              </span>
+            </div>
+            <CardTitle className="text-xl line-clamp-1">{property.title}</CardTitle>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+              <MapPin className="h-4 w-4 text-primary shrink-0" />
+              <span className="line-clamp-1">{property.location}</span>
+            </div>
+          </CardHeader>
+
+          <CardContent className="flex-1 pb-4">
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {property.description}
+            </p>
+            {/* Features row */}
+            <div className="flex items-center gap-4 mt-4 pt-3 border-t text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Bed className="h-4 w-4" />
+                <span>{property.bedrooms} Bed</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Bath className="h-4 w-4" />
+                <span>{property.bathrooms} Bath</span>
+              </div>
+            </div>
+          </CardContent>
+
+          <CardFooter className="pt-0">
+            <Link href={`/properties/${property.id}`} className="w-full">
+              <Button variant="outline" className="w-full">
+                View Details
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -89,74 +192,10 @@ export default async function Home() {
               View all listings <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          {/* Property Cards Grid */}
-          {featured.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featured.map((property) => (
-                <Card key={property.id} className="overflow-hidden flex flex-col hover:shadow-lg transition duration-200">
-                  {/* Property Image Preview */}
-                  <div className="relative h-48 w-full bg-muted flex items-center justify-center overflow-hidden">
-                    {property.images?.[0] && !property.images[0].includes("example.com") ? (
-                      <img
-                        src={property.images[0]}
-                        alt={property.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-muted-foreground">
-                        <Building2 className="h-12 w-12 stroke-[1.5]" />
-                        <span className="text-xs mt-1">RentNest Listing</span>
-                      </div>
-                    )}
-                    <span className="absolute top-3 right-3 bg-primary text-primary-foreground font-bold px-3 py-1 rounded-full text-sm shadow">
-                      ${property.price} / mo
-                    </span>
-                  </div>
-                  {/* Card Content */}
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                      <span className="font-semibold text-primary uppercase tracking-wider">
-                        {property.category?.name || "Apartment"}
-                      </span>
-                    </div>
-                    <CardTitle className="text-xl line-clamp-1">{property.title}</CardTitle>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                      <MapPin className="h-4 w-4 text-primary shrink-0" />
-                      <span className="line-clamp-1">{property.location}</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1 pb-4">
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {property.description}
-                    </p>
-                    {/* Features row */}
-                    <div className="flex items-center gap-4 mt-4 pt-3 border-t text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Bed className="h-4 w-4" />
-                        <span>{property.bedrooms} Bed</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Bath className="h-4 w-4" />
-                        <span>{property.bathrooms} Bath</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <Link href={`/properties/${property.id}`} className="w-full">
-                      <Button variant="outline" className="w-full">
-                        View Details
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-background border rounded-lg">
-              <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No properties available yet. Be the first to list one!</p>
-            </div>
-          )}
+          {/* Property Cards Grid inside Suspense Boundary */}
+          <Suspense fallback={<FeaturedPropertiesSkeleton />}>
+            <FeaturedPropertiesList />
+          </Suspense>
         </div>
       </section>
       {/* ===================== WHY CHOOSE US SECTION ===================== */}
@@ -205,7 +244,7 @@ export default async function Home() {
           <div className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-primary" />
             <span className="font-semibold text-foreground">RentNest</span>
-            <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
+            <span>&copy; 2026 All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/properties" className="hover:text-foreground transition">Properties</Link>
