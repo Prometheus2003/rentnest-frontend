@@ -20,7 +20,8 @@ import {
     Bed,
     Bath,
     ShieldAlert,
-    Inbox
+    Inbox,
+    Edit3
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ interface RentalRequest {
 interface Property {
     id: string;
     title: string;
+    description?: string;
     price: number;
     location: string;
     bedrooms: number;
@@ -92,6 +94,16 @@ export default function LandlordDashboard() {
     const [amenitiesInput, setAmenitiesInput] = useState("WiFi, Air Conditioning");
     const [imageUrl, setImageUrl] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Edit Property Modal State
+    const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editPrice, setEditPrice] = useState("");
+    const [editLocation, setEditLocation] = useState("");
+    const [editBedrooms, setEditBedrooms] = useState("1");
+    const [editBathrooms, setEditBathrooms] = useState("1");
+    const [isUpdatingProperty, setIsUpdatingProperty] = useState(false);
 
     useEffect(() => {
         const token = Cookies.get("token");
@@ -199,6 +211,72 @@ export default function LandlordDashboard() {
             setMyProperties((prev) => prev.filter((p) => p.id !== propertyId));
         } catch (error: any) {
             toast.error(error.message || "Delete failed");
+        }
+    };
+
+    // Open Edit Modal with populated data
+    const handleOpenEdit = (prop: Property) => {
+        setEditingProperty(prop);
+        setEditTitle(prop.title);
+        setEditDescription(prop.description || "");
+        setEditPrice(prop.price.toString());
+        setEditLocation(prop.location);
+        setEditBedrooms(prop.bedrooms.toString());
+        setEditBathrooms(prop.bathrooms.toString());
+    };
+
+    // Save Updated Property
+    const handleSaveEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingProperty) return;
+        const token = Cookies.get("token");
+        if (!token) return;
+
+        setIsUpdatingProperty(true);
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+            const res = await fetch(`${apiUrl}/properties/${editingProperty.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: token,
+                },
+                body: JSON.stringify({
+                    title: editTitle,
+                    description: editDescription,
+                    price: parseFloat(editPrice),
+                    location: editLocation,
+                    bedrooms: parseInt(editBedrooms, 10),
+                    bathrooms: parseInt(editBathrooms, 10),
+                }),
+            });
+
+            const json = await res.json();
+            if (!res.ok) {
+                throw new Error(json.message || "Failed to update property");
+            }
+
+            toast.success("Listing updated successfully!");
+            setMyProperties((prev) =>
+                prev.map((p) =>
+                    p.id === editingProperty.id
+                        ? {
+                              ...p,
+                              title: editTitle,
+                              description: editDescription,
+                              price: parseFloat(editPrice),
+                              location: editLocation,
+                              bedrooms: parseInt(editBedrooms, 10),
+                              bathrooms: parseInt(editBathrooms, 10),
+                          }
+                        : p
+                )
+            );
+            setEditingProperty(null);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update listing");
+        } finally {
+            setIsUpdatingProperty(false);
         }
     };
 
@@ -478,12 +556,20 @@ export default function LandlordDashboard() {
                                         </span>
                                     </CardContent>
 
-                                    <CardFooter className="pt-2 border-t flex justify-between gap-2">
+                                    <CardFooter className="pt-2 border-t flex items-center justify-between gap-2">
                                         <Link href={`/properties/${prop.id}`} className="flex-1">
                                             <Button variant="outline" size="sm" className="w-full">
                                                 View
                                             </Button>
                                         </Link>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => handleOpenEdit(prop)}
+                                            className="gap-1 px-3 text-xs"
+                                        >
+                                            <Edit3 className="h-3.5 w-3.5" /> Edit
+                                        </Button>
                                         <Button
                                             variant="destructive"
                                             size="sm"
@@ -645,6 +731,117 @@ export default function LandlordDashboard() {
                         </CardFooter>
                     </form>
                 </Card>
+            )}
+
+            {/* ===================== EDIT PROPERTY MODAL ===================== */}
+            {editingProperty && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+                    <Card className="w-full max-w-lg shadow-2xl animate-in fade-in-50 zoom-in-95">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-xl">Edit Property Listing</CardTitle>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setEditingProperty(null)}
+                                    className="h-8 w-8"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <CardDescription>
+                                Update property details, pricing, or room specifications.
+                            </CardDescription>
+                        </CardHeader>
+
+                        <form onSubmit={handleSaveEdit}>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="edit-title">Property Title</Label>
+                                    <Input
+                                        id="edit-title"
+                                        value={editTitle}
+                                        onChange={(e) => setEditTitle(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="edit-price">Price ($ / mo)</Label>
+                                        <Input
+                                            id="edit-price"
+                                            type="number"
+                                            value={editPrice}
+                                            onChange={(e) => setEditPrice(e.target.value)}
+                                            required
+                                            min={1}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="edit-location">Location / Area</Label>
+                                        <Input
+                                            id="edit-location"
+                                            value={editLocation}
+                                            onChange={(e) => setEditLocation(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="edit-bedrooms">Bedrooms</Label>
+                                        <Input
+                                            id="edit-bedrooms"
+                                            type="number"
+                                            value={editBedrooms}
+                                            onChange={(e) => setEditBedrooms(e.target.value)}
+                                            required
+                                            min={0}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="edit-bathrooms">Bathrooms</Label>
+                                        <Input
+                                            id="edit-bathrooms"
+                                            type="number"
+                                            value={editBathrooms}
+                                            onChange={(e) => setEditBathrooms(e.target.value)}
+                                            required
+                                            min={1}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="edit-description">Description</Label>
+                                    <textarea
+                                        id="edit-description"
+                                        value={editDescription}
+                                        onChange={(e) => setEditDescription(e.target.value)}
+                                        rows={3}
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                        required
+                                    />
+                                </div>
+                            </CardContent>
+
+                            <CardFooter className="flex justify-end gap-2 pt-4 border-t">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setEditingProperty(null)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button type="submit" disabled={isUpdatingProperty}>
+                                    {isUpdatingProperty ? "Saving..." : "Save Changes"}
+                                </Button>
+                            </CardFooter>
+                        </form>
+                    </Card>
+                </div>
             )}
 
         </div>
