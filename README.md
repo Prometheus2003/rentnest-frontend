@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏡 RentNest — Modern Rental Housing Marketplace
 
-## Getting Started
+RentNest is a full-stack rental marketplace built with **Next.js 16 (App Router)**, **TypeScript**, and **TailwindCSS v4**, paired with a **Node.js / Express / Prisma / PostgreSQL (NeonDB)** backend and **Stripe** payment processing.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 👤 Role-Based Portals & Route Protection
+- **Tenant Portal**: Submit rental requests, monitor status (`PENDING`, `APPROVED`, `REJECTED`), process payments via Stripe, and review rented properties.
+- **Landlord Portal**: Publish new listings, manage properties, review tenant applications with single-click Approve / Reject actions.
+- **Admin Control Center**: Monitor platform KPIs, manage user accounts (Activate / Ban / Role changes), and supervise listings.
+- **Next.js 16 Proxy (`proxy.ts`)**: Route-level middleware interceptor protecting `/dashboard/*` and redirecting authenticated users away from `/auth/*`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🔍 Interactive Property Catalog
+- **Live Search**: Instant text search by title, city, or area.
+- **Dynamic Category Filtering**: Categories loaded directly from the database.
+- **Bedroom & Budget Filters**: Filter listings by minimum bedrooms (`1+`, `2+`, `3+`, `4+`) and maximum monthly budget.
+- **Sorting**: Price sorting (`Low to High` and `High to Low`).
+- **Resilience**: Animated loading skeletons, empty state fallback, and instant filter reset.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🏠 Property Details & Reviews
+- High-res image display, property specifications (bedrooms, bathrooms, amenities).
+- Landlord contact card.
+- Tenant rental booking form with move-in date and personalized notes.
+- **Interactive Ratings & Reviews**: 1–5 clickable star rating system, user feedback submission, and reverse-chronological review feed.
 
-## Learn More
+### 🛡️ Error & Loading Boundaries
+- Custom **404 Not Found** page (`app/not-found.tsx`).
+- React client-side **Error Boundary** with retry mechanism (`app/error.tsx`).
+- Route transition loading states (`app/loading.tsx`).
+- Streaming partial prerendering with `<Suspense>` boundaries (`app/page.tsx`).
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔑 Demo & Grading Credentials
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Use the following credentials to test role-based access:
 
-## Deploy on Vercel
+| Role | Email | Password | Dashboard Access |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@rentnest.com` | `admin123` | `/dashboard/admin` |
+| **Tenant** | `jane@example.com` | `Password123!` | `/dashboard/tenant` |
+| **Landlord** | *Register at `/auth/register` with role `LANDLORD`* | *Custom* | `/dashboard/landlord` |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 16.4 (Turbopack, App Router, `proxy.ts` convention), React 19, TypeScript
+- **Styling & UI**: TailwindCSS v4, Lucide Icons, Shadcn UI / `@base-ui/react`, Sonner Toasts
+- **Backend**: Node.js, Express.js, TypeScript, Prisma ORM
+- **Database**: PostgreSQL (NeonDB Serverless)
+- **Authentication**: JWT with secure HTTP cookies via `js-cookie`
+- **Payments**: Stripe API
+
+---
+
+## 🚀 Getting Started
+
+### 1. Environment Setup
+
+Create a `.env.local` file in `rentnest-frontend`:
+```env
+NEXT_PUBLIC_API_URL="http://localhost:5000/api"
