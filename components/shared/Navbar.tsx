@@ -9,6 +9,7 @@ import { Home, LogOut, LayoutDashboard, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function Navbar() {
     const router = useRouter();
@@ -67,6 +68,7 @@ export default function Navbar() {
                 </nav>
                 {/*Right side: Auth Actions*/}
                 <div className="flex items-center gap-3">
+                    <ThemeToggle />
                     {token ? (
                         // --- Logged In State ---
                         <>
