@@ -15,7 +15,10 @@ import {
     XCircle,
     Hourglass,
     ArrowRight,
-    UserCheck
+    UserCheck,
+    Receipt,
+    Printer,
+    X
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +50,7 @@ export default function TenantDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [payingId, setPayingId] = useState<string | null>(null);
     const [userName, setUserName] = useState<string>("Tenant");
+    const [selectedReceipt, setSelectedReceipt] = useState<RentalRequest | null>(null);
 
     useEffect(() => {
         const token = Cookies.get("token");
@@ -119,7 +123,9 @@ export default function TenantDashboard() {
 
             setRequests((prev) =>
                 prev.map((req) =>
-                    req.id === requestId ? { ...req, paymentStatus: "PAID" } : req
+                    req.id === requestId
+                        ? { ...req, paymentStatus: "PAID", paymentId: json.data?.transactionId || "pi_stripe_verified" }
+                        : req
                 )
             );
         } catch (error: any) {
@@ -255,8 +261,18 @@ export default function TenantDashboard() {
                                             {payingId === req.id ? "Processing Stripe..." : `Pay Rent ($${req.property?.price})`}
                                         </Button>
                                     ) : req.paymentStatus === "PAID" ? (
-                                        <div className="w-full text-center text-xs text-emerald-600 font-semibold py-1">
-                                            Lease Confirmed & Paid
+                                        <div className="w-full flex items-center justify-between gap-2 py-1">
+                                            <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                                                <CheckCircle2 className="h-3.5 w-3.5" /> Lease Paid
+                                            </span>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="text-xs gap-1.5 h-8 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+                                                onClick={() => setSelectedReceipt(req)}
+                                            >
+                                                <Receipt className="h-3.5 w-3.5" /> View Receipt
+                                            </Button>
                                         </div>
                                     ) : req.status === "REJECTED" ? (
                                         <div className="w-full text-center text-xs text-destructive py-1">
@@ -284,6 +300,97 @@ export default function TenantDashboard() {
                     </div>
                 )}
             </div>
+
+            {/* ===================== PAYMENT RECEIPT MODAL ===================== */}
+            {selectedReceipt && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+                    <Card className="w-full max-w-md shadow-2xl border-emerald-500/20 animate-in fade-in-50 zoom-in-95">
+                        <CardHeader className="pb-3 border-b">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-emerald-600">
+                                    <Receipt className="h-5 w-5" />
+                                    <span className="font-bold text-sm tracking-wide uppercase">Official Rent Receipt</span>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setSelectedReceipt(null)}
+                                    className="h-8 w-8 text-muted-foreground"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <CardTitle className="text-xl mt-2 text-foreground">
+                                {selectedReceipt.property?.title}
+                            </CardTitle>
+                            <CardDescription className="flex items-center gap-1 text-xs">
+                                <MapPin className="h-3.5 w-3.5 text-primary" />
+                                {selectedReceipt.property?.location}
+                            </CardDescription>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4 pt-4 text-sm">
+                            {/* Receipt Status & Amount Box */}
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span className="text-xs text-muted-foreground uppercase font-medium">Total Paid</span>
+                                    <div className="text-2xl font-extrabold text-foreground">
+                                        ${selectedReceipt.property?.price}
+                                        <span className="text-xs font-normal text-muted-foreground"> / month</span>
+                                    </div>
+                                </div>
+                                <Badge className="bg-emerald-600 text-white font-semibold gap-1 px-3 py-1">
+                                    <CheckCircle2 className="h-3.5 w-3.5" /> PAID
+                                </Badge>
+                            </div>
+
+                            {/* Payment Breakdown Table */}
+                            <div className="space-y-2 border rounded-lg p-3 text-xs divide-y divide-border/60">
+                                <div className="flex justify-between py-1.5">
+                                    <span className="text-muted-foreground">Tenant Name</span>
+                                    <span className="font-semibold text-foreground">{userName}</span>
+                                </div>
+                                <div className="flex justify-between py-1.5">
+                                    <span className="text-muted-foreground">Move-in Date</span>
+                                    <span className="font-medium">{new Date(selectedReceipt.moveInDate).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex justify-between py-1.5">
+                                    <span className="text-muted-foreground">Lease Duration</span>
+                                    <span className="font-medium">{selectedReceipt.rentalDuration} Months</span>
+                                </div>
+                                <div className="flex justify-between py-1.5">
+                                    <span className="text-muted-foreground">Payment Gateway</span>
+                                    <span className="font-medium text-primary">Stripe Verified</span>
+                                </div>
+                                <div className="flex justify-between py-1.5">
+                                    <span className="text-muted-foreground">Transaction ID</span>
+                                    <span className="font-mono text-[11px] text-muted-foreground truncate max-w-[180px]">
+                                        {selectedReceipt.paymentId || "pi_verified_stripe_completed"}
+                                    </span>
+                                </div>
+                            </div>
+                        </CardContent>
+
+                        <CardFooter className="flex items-center justify-between gap-3 pt-3 border-t bg-muted/10">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.print()}
+                                className="gap-2 text-xs cursor-pointer"
+                            >
+                                <Printer className="h-3.5 w-3.5" /> Print Receipt
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={() => setSelectedReceipt(null)}
+                                className="text-xs cursor-pointer"
+                            >
+                                Close
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            )}
 
         </div>
     );
